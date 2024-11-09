@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\CategoryResource;
+use App\Http\Resources\ErrorResource;
+use App\Http\Resources\SuccessResource;
 use App\Models\Category;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
@@ -14,12 +17,8 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = Category::get();
-        return response()->json([
-            'success' => 'true',
-            'message' => 'Successfully found ',
-            'data' => $categories
-        ]);
+        $categories = Category::latest()->get();
+        return new  SuccessResource(['data' => $categories]);
     }
 
     /**
@@ -41,24 +40,15 @@ class CategoryController extends Controller
         ]);
 
         if ($data->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error',
-                'errors' => $data->getMessageBag()
-            ], 422);
+
+            return (new ErrorResource($data->getMessageBag()))->response()->setStatusCode(422);
         };
         $fromData = $data->validate();
         $fromData['slug'] = Str::slug($fromData['name']);
-        $category = Category::create($fromData);
+        Category::create($fromData);
 
         // retun json
-        return response()->json(
-            [
-                'success' => true,
-                'message' => 'Successfully created',
-                'data' => $category
-            ]
-        );
+        return (new SuccessResource(['message' => 'Successfully created']))->response()->setStatusCode(201);
     }
 
     /**
@@ -80,20 +70,10 @@ class CategoryController extends Controller
         $category = Category::find($id);
 
         if (!$category) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error',
-                'errors' => $category->getMessageBag()
-            ], 404);
+            return (new ErrorResource($category->getMessageBag()))->response()->setStatusCode(422);
         }
 
-        return response()->json(
-            [
-                'success' => true,
-                'message' => 'Successfully Found',
-                'data' => $category
-            ]
-        );
+        return new  SuccessResource(['data' => $category]);
     }
 
     /**
@@ -136,13 +116,7 @@ class CategoryController extends Controller
         $category->update($fromData);
 
         // retun json
-        return response()->json(
-            [
-                'success' => true,
-                'message' => 'Successfully Updated',
-                'data' => $category
-            ]
-        );
+        return new SuccessResource(['data' => $category]);
     }
 
     /**
@@ -159,13 +133,9 @@ class CategoryController extends Controller
                 'errors' => $category->getMessageBag()
             ], 404);
         }
-        
+
         $category->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Successfully Deleted',
-            'data' => $category
-        ], 201);
+        return (new SuccessResource(['message' => 'Successfully Deleted']))->response()->setStatusCode(201);
     }
 }
