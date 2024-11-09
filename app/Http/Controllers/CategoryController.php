@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CategoryStoreRequest;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ErrorResource;
 use App\Http\Resources\SuccessResource;
@@ -32,21 +33,11 @@ class CategoryController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CategoryStoreRequest $request)
     {
-
-        $data = Validator::make($request->all(), [
-            'name' => 'required|string|unique:categories',
-        ]);
-
-        if ($data->fails()) {
-
-            return (new ErrorResource($data->getMessageBag()))->response()->setStatusCode(422);
-        };
-        $fromData = $data->validate();
+         $fromData = $request->validated();
         $fromData['slug'] = Str::slug($fromData['name']);
         Category::create($fromData);
-
         // retun json
         return (new SuccessResource(['message' => 'Successfully created']))->response()->setStatusCode(201);
     }
@@ -56,8 +47,6 @@ class CategoryController extends Controller
      */
     public function show(string $id)
     {
-
-
         if (!is_numeric($id)) {
             return response()->json([
                 'success' => false,
@@ -72,8 +61,9 @@ class CategoryController extends Controller
         if (!$category) {
             return (new ErrorResource($category->getMessageBag()))->response()->setStatusCode(422);
         }
+        $formateData = new CategoryResource($category);
 
-        return new  SuccessResource(['data' => $category]);
+        return new  SuccessResource(['data' => $formateData]);
     }
 
     /**
