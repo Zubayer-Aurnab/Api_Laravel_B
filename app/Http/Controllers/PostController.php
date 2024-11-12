@@ -50,7 +50,7 @@ class PostController extends Controller
         $data['slug'] = Str::slug($data['title']);
 
         if ($request->hasFile('photo')) {
-            $data['photo'] = Storage::putFile('photos', $request->file('photo'));
+            $data['photo'] = Storage::putFile('', $request->file('photo'));
         }
 
         $post = Post::create($data);
@@ -90,8 +90,11 @@ class PostController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Post $post)
     {
-        //
+        $post->delete();
+        return new SuccessResource([
+            'message' => 'Post Deleted Successfully'
+        ]);
     }
 }
