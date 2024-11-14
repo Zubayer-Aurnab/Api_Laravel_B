@@ -50,7 +50,10 @@ class PostController extends Controller
         $data['slug'] = Str::slug($data['title']);
 
         if ($request->hasFile('photo')) {
-            $data['photo'] = Storage::putFile('', $request->file('photo'));
+            $file = $request->file('photo');
+            $filename = uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads'), $filename);
+            $data['photo'] = '' . $filename;
         }
 
         $post = Post::create($data);
@@ -60,6 +63,7 @@ class PostController extends Controller
             'data' => $post
         ]);
     }
+
 
     /**
      * Display the specified resource.
@@ -92,7 +96,14 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
+        // Check if the photo exists and delete it from public/uploads
+        if ($post->photo && file_exists(public_path($post->photo))) {
+            unlink(public_path($post->photo));
+        }
+
+        // Delete the post record from the database
         $post->delete();
+
         return new SuccessResource([
             'message' => 'Post Deleted Successfully'
         ]);
