@@ -2,63 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\SuccessResource;
+use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function user(Request $request)
     {
-        //
+        $response['data'] = new UserResource($request->user());
+        return new SuccessResource(['data' => $response]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function logout(Request $request)
     {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $request->user()->currentAccessToken()->delete();
+        $response['message'] = 'Successfully Logout';
+        return new SuccessResource(['message' => $response]);
     }
 }
